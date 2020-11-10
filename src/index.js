@@ -9,7 +9,7 @@ let pointerR = null;
 let pointerL = null;
 let activePointer = null;
 let selected = null;
-let scale = null;
+let scaleEL = null;
 let step = 0;
 let tipL = null;
 let tipR = null;
@@ -26,22 +26,22 @@ let conf = {
   set: null,
   range: false,
   width: null,
-  scale: true,
-  labels: true,
-  tooltip: true,
+  scale: false,
+  labels: false,
+  tooltip: false,
   step: null,
   disabled: false,
   onChange: null,
 };
 
 let cls = {
-  container: 'rs-container',
-  background: 'rs-bg',
-  selected: 'rs-selected',
-  pointer: 'rs-pointer',
-  scale: 'rs-scale',
-  noscale: 'rs-noscale',
-  tip: 'rs-tooltip',
+  container: 'rf-container rf-clearfix',
+  background: 'rf-bg',
+  selected: 'rf-selected',
+  pointer: 'rf-pointer',
+  scale: 'rf-scale',
+  noscale: 'rf-noscale',
+  tip: 'rf-tooltip',
 };
 
 for (var i in conf) {
@@ -71,10 +71,10 @@ export function init(config) {
 
 function createSlider() {
   slider = createElement('div', cls.container);
-  slider.innerHTML = '<div class="rs-bg"></div>';
+  slider.innerHTML = '<div class="rf-bg"></div>';
   selected = createElement('div', cls.selected);
   pointerL = createElement('div', cls.pointer, ['dir', 'left']);
-  scale = createElement('div', cls.scale);
+  scaleEL = createElement('div', cls.scale);
 
   if (conf.tooltip) {
     tipL = createElement('div', cls.tip);
@@ -82,7 +82,7 @@ function createSlider() {
     pointerL.appendChild(tipL);
   }
   slider.appendChild(selected);
-  slider.appendChild(scale);
+  conf.scale && slider.appendChild(scaleEL);
   slider.appendChild(pointerL);
 
   if (conf.range) {
@@ -97,8 +97,6 @@ function createSlider() {
   sliderLeft = slider.getBoundingClientRect().left;
   sliderWidth = slider.clientWidth;
   pointerWidth = pointerL.clientWidth;
-
-  if (!conf.scale) slider.classList.add(cls.noscale);
 
   setInitialValues();
 }
@@ -130,7 +128,7 @@ function createScale(resize) {
       ins = createElement('ins');
 
     span.appendChild(ins);
-    scale.appendChild(span);
+    scaleEL.appendChild(span);
 
     span.style.width = i === iLen - 1 ? 0 : step + 'px';
 
@@ -278,15 +276,6 @@ function updateScale() {
 function disabled(disabled) {
   conf.disabled = disabled;
   slider.classList[disabled ? 'add' : 'remove']('disabled');
-}
-
-function getValue() {
-  return input.value;
-}
-
-function destroy() {
-  input.style.display = inputDisplay;
-  slider.remove();
 }
 
 function createElement(el, cls, dataAttr) {
