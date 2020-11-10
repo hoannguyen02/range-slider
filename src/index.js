@@ -13,13 +13,14 @@ let step = 0;
 let tipL = null;
 let tipR = null;
 
+// TODO: Rename values bellow for better understand
 let values = {
   start: null,
   end: null,
 };
 let conf = {
   inputId: '',
-  values: null,
+  values: [],
   set: null,
   width: null,
   scale: false,
@@ -59,9 +60,7 @@ export function init(config) {
   inputTag.style.display = 'none';
 
   // Todo validate min,max must be number
-  if (
-    !(conf.values.hasOwnProperty('min') && conf.values.hasOwnProperty('max'))
-  ) {
+  if (conf.min === undefined || conf.min === undefined) {
     console.error(`Missing min or max value for range filter`);
     return;
   }
@@ -100,10 +99,10 @@ function createSlider() {
 function setInitialValues() {
   disabled(conf.disabled);
 
-  conf.values = prepareArrayValues(conf);
+  conf.values = prepareArrayValues();
 
-  values.start = 0;
-  values.end = conf.values.length - 1;
+  values.start = conf.min;
+  values.end = conf.max;
 
   if (conf.set && conf.set.length && checkInitial(conf)) {
     var vals = conf.set;
@@ -135,7 +134,7 @@ function createScale(resize) {
 }
 
 function addEvents() {
-  var pointers = slider.querySelectorAll('.' + cls.pointer),
+  const pointers = slider.querySelectorAll('.' + cls.pointer),
     pieces = slider.querySelectorAll('span');
 
   createEvents(document, 'mousemove touchmove', move.bind(this));
@@ -201,7 +200,7 @@ function onClickPiece(e) {
 
   slider.classList.remove('sliding');
 
-  return setValues();
+  setValues();
 }
 
 function setValues(start, end) {
@@ -249,7 +248,7 @@ function onResize() {
 function updateScale() {
   step = sliderWidth / (conf.values.length - 1);
 
-  var pieces = slider.querySelectorAll('span');
+  const pieces = slider.querySelectorAll('span');
 
   for (var i = 0, iLen = pieces.length; i < iLen; i++)
     pieces[i].style.width = step + 'px';
@@ -278,19 +277,19 @@ function createEvents(el, ev, callback) {
     el.addEventListener(events[i], callback);
 }
 
-function prepareArrayValues(conf) {
+function prepareArrayValues() {
   const values = [],
-    range = conf.values.max - conf.values.min;
+    range = conf.max - conf.min;
 
   if (!conf.step) {
     console.log('No step defined...');
-    return [conf.values.min, conf.values.max];
+    return [conf.min, conf.max];
   }
 
   for (var i = 0, iLen = range / conf.step; i < iLen; i++)
-    values.push(conf.values.min + i * conf.step);
+    values.push(conf.min + i * conf.step);
 
-  if (values.indexOf(conf.values.max) < 0) values.push(conf.values.max);
+  if (values.indexOf(conf.max) < 0) values.push(conf.max);
 
   return values;
 }
