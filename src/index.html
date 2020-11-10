@@ -14,11 +14,10 @@
     <script src="<%= process.env.PUBLIC_URL + htmlWebpackPlugin.files.js %>"></script>
     <script>
       RangeFilter.init({
-        target: '#range-filter',
+        inputId: '#range-filter',
         values: {min: 0, max: 100},
         step: 10,
-        range: true,
-        set: [10, 40],
+        set: [0, 0],
         onChange: function (vals) {
             console.log(vals);
         }

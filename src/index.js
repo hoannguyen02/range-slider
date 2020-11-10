@@ -1,5 +1,5 @@
 import './index.css';
-let input = null;
+let inputTag = null;
 let slider = null;
 let sliderWidth = 0;
 let sliderLeft = 0;
@@ -12,18 +12,15 @@ let scaleEL = null;
 let step = 0;
 let tipL = null;
 let tipR = null;
-let timeout = null;
-let valRange = false;
 
 let values = {
   start: null,
   end: null,
 };
 let conf = {
-  target: null,
+  inputId: '',
   values: null,
   set: null,
-  range: false,
   width: null,
   scale: false,
   labels: false,
@@ -49,20 +46,24 @@ for (var i in conf) {
 
 export function init(config) {
   conf = config;
-  if (typeof conf.target === 'object') input = conf.target;
-  else input = document.getElementById(conf.target.replace('#', ''));
+  if (!config.inputId) {
+    console.error('Need to provide element with id to generate range filter');
+    return;
+  }
+  inputTag = document.getElementById(conf.inputId.replace('#', ''));
+  if (!inputTag) {
+    console.error(`Cannot find input element with id ${config.inputId}`);
+    return;
+  }
 
-  if (!input) return console.log('Cannot find target element...');
+  inputTag.style.display = 'none';
 
-  input.style.display = 'none';
-  valRange = !(conf.values instanceof Array);
-
-  if (valRange) {
-    if (
-      !conf.values.hasOwnProperty('min') ||
-      !conf.values.hasOwnProperty('max')
-    )
-      return console.log('Missing min or max value...');
+  // Todo validate min,max must be number
+  if (
+    !(conf.values.hasOwnProperty('min') && conf.values.hasOwnProperty('max'))
+  ) {
+    console.error(`Missing min or max value for range filter`);
+    return;
   }
   createSlider();
 }
@@ -83,13 +84,10 @@ function createSlider() {
   conf.scale && slider.appendChild(scaleEL);
   slider.appendChild(pointerL);
 
-  if (conf.range) {
-    pointerR = createElement('div', cls.pointer, ['dir', 'right']);
-    if (conf.tooltip) pointerR.appendChild(tipR);
-    slider.appendChild(pointerR);
-  }
-
-  input.parentNode.insertBefore(slider, input.nextSibling);
+  pointerR = createElement('div', cls.pointer, ['dir', 'right']);
+  if (conf.tooltip) pointerR.appendChild(tipR);
+  slider.appendChild(pointerR);
+  inputTag.parentNode.insertBefore(slider, inputTag.nextSibling);
 
   if (conf.width) slider.style.width = parseInt(conf.width) + 'px';
   sliderLeft = slider.getBoundingClientRect().left;
@@ -102,18 +100,15 @@ function createSlider() {
 function setInitialValues() {
   disabled(conf.disabled);
 
-  if (valRange) conf.values = prepareArrayValues(conf);
+  conf.values = prepareArrayValues(conf);
 
   values.start = 0;
-  values.end = conf.range ? conf.values.length - 1 : 0;
+  values.end = conf.values.length - 1;
 
   if (conf.set && conf.set.length && checkInitial(conf)) {
     var vals = conf.set;
-
-    if (conf.range) {
-      values.start = conf.values.indexOf(vals[0]);
-      values.end = conf.set[1] ? conf.values.indexOf(vals[1]) : null;
-    } else values.end = conf.values.indexOf(vals[0]);
+    values.start = conf.values.indexOf(vals[0]);
+    values.end = conf.set[1] ? conf.values.indexOf(vals[1]) : null;
   }
   createScale();
 }
@@ -179,10 +174,8 @@ function move(e) {
     if (index <= 0) index = 0;
     if (index > conf.values.length - 1) index = conf.values.length - 1;
 
-    if (conf.range) {
-      if (activePointer === pointerL) values.start = index;
-      if (activePointer === pointerR) values.end = index;
-    } else values.end = index;
+    if (activePointer === pointerL) values.start = index;
+    if (activePointer === pointerR) values.end = index;
 
     setValues();
   }
@@ -200,11 +193,11 @@ function onClickPiece(e) {
   if (idx > conf.values.length - 1) idx = conf.values.length - 1;
   if (idx < 0) idx = 0;
 
-  if (conf.range) {
-    if (idx - values.start <= values.end - idx) {
-      values.start = idx;
-    } else values.end = idx;
-  } else values.end = idx;
+  if (idx - values.start <= values.end - idx) {
+    values.start = idx;
+  } else {
+    values.end = idx;
+  }
 
   slider.classList.remove('sliding');
 
@@ -212,7 +205,7 @@ function onClickPiece(e) {
 }
 
 function setValues(start, end) {
-  var activePointer = conf.range ? 'start' : 'end';
+  var activePointer = 'start';
 
   if (start && conf.values.indexOf(start) > -1)
     values[activePointer] = conf.values.indexOf(start);
@@ -220,21 +213,17 @@ function setValues(start, end) {
   if (end && conf.values.indexOf(end) > -1)
     values.end = conf.values.indexOf(end);
 
-  if (conf.range && values.start > values.end) values.start = values.end;
+  if (values.start > values.end) values.start = values.end;
 
   pointerL.style.left = values[activePointer] * step - pointerWidth / 2 + 'px';
 
-  if (conf.range) {
-    if (conf.tooltip) {
-      tipL.innerHTML = conf.values[values.start];
-      tipR.innerHTML = conf.values[values.end];
-    }
-    input.value = conf.values[values.start] + ',' + conf.values[values.end];
-    pointerR.style.left = values.end * step - pointerWidth / 2 + 'px';
-  } else {
-    if (conf.tooltip) tipL.innerHTML = conf.values[values.end];
-    input.value = conf.values[values.end];
+  if (conf.tooltip) {
+    tipL.innerHTML = conf.values[values.start];
+    tipR.innerHTML = conf.values[values.end];
   }
+
+  inputTag.value = conf.values[values.start] + ',' + conf.values[values.end];
+  pointerR.style.left = values.end * step - pointerWidth / 2 + 'px';
 
   if (values.end > conf.values.length - 1) values.end = conf.values.length - 1;
   if (values.start < 0) values.start = 0;
@@ -246,12 +235,9 @@ function setValues(start, end) {
 }
 
 function onChange() {
-  if (timeout) clearTimeout(timeout);
-  timeout = setTimeout(function() {
-    if (conf.onChange && typeof conf.onChange === 'function') {
-      return conf.onChange(input.value);
-    }
-  }, 500);
+  if (conf.onChange && typeof conf.onChange === 'function') {
+    return conf.onChange(inputTag.value);
+  }
 }
 
 function onResize() {
@@ -293,7 +279,7 @@ function createEvents(el, ev, callback) {
 }
 
 function prepareArrayValues(conf) {
-  var values = [],
+  const values = [],
     range = conf.values.max - conf.values.min;
 
   if (!conf.step) {
@@ -313,9 +299,6 @@ function checkInitial(conf) {
   if (!conf.set || conf.set.length < 1) return null;
   if (conf.values.indexOf(conf.set[0]) < 0) return null;
 
-  if (conf.range) {
-    if (conf.set.length < 2 || conf.values.indexOf(conf.set[1]) < 0)
-      return null;
-  }
+  if (conf.set.length < 2 || conf.values.indexOf(conf.set[1]) < 0) return null;
   return true;
 }
