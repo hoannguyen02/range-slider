@@ -1,6 +1,5 @@
 import './index.css';
 let input = null;
-let inputDisplay = null;
 let slider = null;
 let sliderWidth = 0;
 let sliderLeft = 0;
@@ -55,7 +54,6 @@ export function init(config) {
 
   if (!input) return console.log('Cannot find target element...');
 
-  inputDisplay = getComputedStyle(input, null).display;
   input.style.display = 'none';
   valRange = !(conf.values instanceof Array);
 
@@ -310,6 +308,7 @@ function prepareArrayValues(conf) {
 
   return values;
 }
+
 function checkInitial(conf) {
   if (!conf.set || conf.set.length < 1) return null;
   if (conf.values.indexOf(conf.set[0]) < 0) return null;
