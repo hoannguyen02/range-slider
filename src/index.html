@@ -8,8 +8,21 @@
   </head>
   <body>
     <h2 style="text-align: center;">Welcome to Range filter Test Page</h2>
-    <script>
-    </script>
+    <input type="text" id="range-filter" />
     <script src="<%= process.env.PUBLIC_URL + htmlWebpackPlugin.files.js %>"></script>
+    <script>
+      RangeFilter.init({
+        target: '#range-filter',
+        values: {min: 0, max: 100},
+        step: 10,
+        range: true,
+        set: [10, 40],
+        scale: true,
+        labels: false,
+        onChange: function (vals) {
+            console.log(vals);
+        }
+      })
+    </script>
   </body>
 </html>
