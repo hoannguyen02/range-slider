@@ -12,7 +12,8 @@ let scaleEL = null;
 let step = 0;
 let tipL = null;
 let tipR = null;
-
+let canMove = true;
+let emitChange = true;
 // TODO: Rename values bellow for better understand
 let values = {
   start: null,
@@ -160,7 +161,7 @@ function drag(e) {
   if (dir === 'left') activePointer = pointerL;
   if (dir === 'right') activePointer = pointerR;
 
-  return slider.classList.add('sliding');
+  slider.classList.add('sliding');
 }
 
 function move(e) {
@@ -169,20 +170,34 @@ function move(e) {
       index = coordX - sliderLeft - pointerWidth / 2;
 
     index = Math.round(index / step);
-
     if (index <= 0) index = 0;
     if (index > conf.values.length - 1) index = conf.values.length - 1;
+    if (index === 0 || index === conf.values.length - 1) {
+      if (!canMove && emitChange) {
+        emitChange = false;
+      }
+      canMove = false;
+    } else {
+      emitChange = true;
+      canMove = true;
+    }
 
-    if (activePointer === pointerL) values.start = index;
-    if (activePointer === pointerR) values.end = index;
+    if (emitChange) {
+      if (activePointer === pointerL) {
+        values.start = index;
+      }
+      if (activePointer === pointerR) {
+        values.end = index;
+      }
 
-    setValues();
+      setValues();
+      onChange();
+    }
   }
 }
 
 function drop() {
   activePointer = null;
-  onChange();
 }
 
 function onClickPiece(e) {
@@ -199,19 +214,11 @@ function onClickPiece(e) {
     values.end = idx;
   }
 
-  slider.classList.remove('sliding');
-
   setValues();
 }
 
-function setValues(start, end) {
+function setValues() {
   var activePointer = 'start';
-
-  if (start && conf.values.indexOf(start) > -1)
-    values[activePointer] = conf.values.indexOf(start);
-
-  if (end && conf.values.indexOf(end) > -1)
-    values.end = conf.values.indexOf(end);
 
   if (values.start > values.end) values.start = values.end;
 
@@ -234,14 +241,14 @@ function setValues(start, end) {
 
 function onChange() {
   if (conf.onChange && typeof conf.onChange === 'function') {
-    return conf.onChange(inputTag.value);
+    conf.onChange(inputTag.value);
   }
 }
 
 function onResize() {
   sliderLeft = slider.getBoundingClientRect().left;
   sliderWidth = slider.clientWidth;
-  return updateScale();
+  updateScale();
 }
 
 function updateScale() {
