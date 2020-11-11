@@ -17,6 +17,7 @@ module.exports = merge(common, {
     filename: prefixName + '.min.js',
     library: libraryName,
     libraryTarget: target,
+    globalObject: 'this',
   },
 });
 

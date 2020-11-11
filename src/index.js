@@ -182,6 +182,7 @@ function move(e) {
 
 function drop() {
   activePointer = null;
+  onChange();
 }
 
 function onClickPiece(e) {
@@ -229,8 +230,6 @@ function setValues(start, end) {
 
   selected.style.width = (values.end - values.start) * step + 'px';
   selected.style.left = values.start * step + 'px';
-
-  onChange();
 }
 
 function onChange() {
