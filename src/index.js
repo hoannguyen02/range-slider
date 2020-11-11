@@ -172,6 +172,8 @@ function move(e) {
     index = Math.round(index / step);
     if (index <= 0) index = 0;
     if (index > conf.values.length - 1) index = conf.values.length - 1;
+
+    // Won't set values and emit if index greater smaller than start or greater than end again
     if (index === 0 || index === conf.values.length - 1) {
       if (!canMove && emitChange) {
         emitChange = false;
@@ -182,12 +184,23 @@ function move(e) {
       canMove = true;
     }
 
+    const { start, end } = values;
+    let newStart = start,
+      newEnd = end;
+
     if (emitChange) {
       if (activePointer === pointerL) {
-        values.start = index;
+        newStart = index;
       }
       if (activePointer === pointerR) {
-        values.end = index;
+        newEnd = index;
+      }
+      // Won't set values and emit if the same values
+      if (newStart === start && newEnd === end) {
+        return;
+      } else {
+        values.start = newStart;
+        values.end = newEnd;
       }
 
       setValues();
