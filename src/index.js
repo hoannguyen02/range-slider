@@ -242,7 +242,8 @@ function setValues() {
     tipR.innerHTML = conf.values[values.end];
   }
 
-  inputTag.value = conf.values[values.start] + ',' + conf.values[values.end];
+  inputTag.value = [conf.values[values.start], conf.values[values.end]];
+
   pointerR.style.left = values.end * step - pointerWidth / 2 + 'px';
 
   if (values.end > conf.values.length - 1) values.end = conf.values.length - 1;
