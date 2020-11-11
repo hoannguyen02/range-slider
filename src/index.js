@@ -52,7 +52,7 @@ export function init(config) {
     console.error('Need to provide element with id to generate range filter');
     return;
   }
-  inputTag = document.getElementById(conf.inputId.replace('#', ''));
+  inputTag = document.getElementById(conf.inputId);
   if (!inputTag) {
     console.error(`Cannot find input element with id ${config.inputId}`);
     return;
