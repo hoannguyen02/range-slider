@@ -19,7 +19,6 @@
 }
 .rf-container .rf-selected {
   background-color: #2b72cb;
-  transition: all 0.2s linear;
   width: 0;
 }
 .rf-container.disabled .rf-selected {
@@ -33,7 +32,6 @@
   left: -1px;
   position: absolute;
   top: 5px;
-  transition: all 0.2s linear;
   border-radius: 14px;
   background-color: #2b72cb;
   border: 3px solid #fff;

@@ -26,6 +26,7 @@ export function init(config) {
   let tipR = null;
   let canMove = true;
   let emitChange = true;
+  let firstRender = true;
   // TODO: Rename values bellow for better understand
   let values = {
     start: null,
@@ -226,10 +227,18 @@ export function init(config) {
       end: conf.values[values.end],
     });
 
-    pointerR.style.left =
-      values.end * step > 0
-        ? values.end * step - (pointerWidth + 4) + 'px'
-        : -1 + 'px';
+    const [from, to] = conf.set;
+
+    if (firstRender && from === to && (from === conf.min || from < conf.min)) {
+      firstRender = false;
+      pointerR.style.left =
+        (conf.values.length - 1) * step - (pointerWidth + 4) + 'px';
+    } else {
+      pointerR.style.left =
+        values.end * step > 0
+          ? values.end * step - (pointerWidth + 4) + 'px'
+          : -1 + 'px';
+    }
 
     if (values.end > conf.values.length - 1) {
       values.end = conf.values.length - 1;
