@@ -217,7 +217,10 @@ export function init(config) {
   function setValues() {
     if (values.start > values.end) values.start = values.end;
 
-    pointerL.style.left = values['start'] * step - pointerWidth / 2 + 'px';
+    pointerL.style.left =
+      values['start'] * step > 0
+        ? values['start'] * step - pointerWidth / 2 + 'px'
+        : -1 + 'px';
 
     if (conf.tooltip) {
       tipL.innerHTML = conf.values[values.start];
@@ -229,7 +232,10 @@ export function init(config) {
       end: conf.values[values.end],
     });
 
-    pointerR.style.left = values.end * step - pointerWidth / 2 + 'px';
+    pointerR.style.left =
+      values.end * step > 0
+        ? values.end * step - (pointerWidth + 4) + 'px'
+        : -1 + 'px';
 
     if (values.end > conf.values.length - 1)
       values.end = conf.values.length - 1;
