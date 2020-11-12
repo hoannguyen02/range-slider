@@ -16,31 +16,37 @@
   <body>
     <h2 style="text-align: center;">Welcome to Range filter Test Page</h2>
     <div class="container">
-      <input type="text" id="range-filter" />
-      <input type="text" id="range-filter-2" />
+      <input type="hidden" id="input-range-filter-1556735" data-model="{&quot;seoFollow&quot;:true,&quot;filterId&quot;:1556735,&quot;solrFieldName&quot;:&quot;motoring__mileage_kilometers&quot;,&quot;start&quot;:0,&quot;end&quot;:500000,&quot;density&quot;:10,&quot;filterType&quot;:&quot;SliderRange&quot;,&quot;from&quot;:155000,&quot;to&quot;:500000,&quot;step&quot;:5000,&quot;order&quot;:6,&quot;isSelected&quot;:true,&quot;GroupName&quot;:&quot;Kilometerstand&quot;,&quot;FieldNames&quot;:&quot;motoring__mileage_kilometers&quot;,&quot;DisplayFormat&quot;:&quot;{0} km&quot;,&quot;ValidationError&quot;:&quot;Bitte geben Sie einen Wert grösser als 0 und kleiner als 500000 ein.&quot;,&quot;url&quot;:&quot;/auto/mercedes&quot;}" value="{&quot;start&quot;:500000,&quot;end&quot;:500000}">
+      <input type="hidden" id="input-range-filter-1556727" data-model="{&quot;seoFollow&quot;:true,&quot;filterId&quot;:1556727,&quot;solrFieldName&quot;:&quot;motoring__engine_displacement_cubic_centimeters&quot;,&quot;start&quot;:0,&quot;end&quot;:10000,&quot;density&quot;:10,&quot;filterType&quot;:&quot;SliderRange&quot;,&quot;from&quot;:0,&quot;to&quot;:0,&quot;step&quot;:100,&quot;order&quot;:8,&quot;isSelected&quot;:false,&quot;GroupName&quot;:&quot;Hubraum (CCM)&quot;,&quot;FieldNames&quot;:&quot;motoring__engine_displacement_cubic_centimeters&quot;,&quot;DisplayFormat&quot;:&quot;{0} cm³&quot;,&quot;ValidationError&quot;:&quot;Bitte geben Sie einen Wert grösser als 0 und kleiner als 10000 ein.&quot;,&quot;url&quot;:&quot;/auto/mercedes?motoring__mileage_kilometers_from=155000&amp;motoring__mileage_kilometers_to=500000&quot;}" value="{&quot;start&quot;:0,&quot;end&quot;:0}">
+    </div>
+    <div class="value">
+      <input class="autopost" type="number" id="1556735_from" name="1556735_from">
+      <input class="autopost" type="number" id="1556735_to" name="1556735_to" >
+    </div>
+    <div class="value">
+      <input class="autopost" type="number" id="1556727_from" name="1556727_from">
+      <input class="autopost" type="number" id="1556727_to" name="1556727_to" >
     </div>
     <script src="<%= process.env.PUBLIC_URL + htmlWebpackPlugin.files.js %>"></script>
     <script>
-      RangeFilter.init({
-        inputId: 'range-filter',
-        min: 0,
-        max: 100,
-        step: 1,
-        set: [0, 0],
-        onChange: function (rangeValue) {
-            console.log(rangeValue);
-        }
-      })
-      RangeFilter.init({
-        inputId: 'range-filter-2',
-        min: 100,
-        max: 1000,
-        step: 100,
-        set: [100, 300],
-        onChange: function (rangeValue) {
-            console.log(rangeValue);
-        }
-      })
+      Array.prototype.slice.call(document.querySelectorAll("[id^='input-range-filter']")).forEach(function (item) {
+        var dataModel = JSON.parse(item.getAttribute('data-model'));
+        RangeFilter && RangeFilter.init({
+          inputId: item.id,
+          min: dataModel.start,
+          max: dataModel.end,
+          step: dataModel.step,
+          set: [dataModel.from, dataModel.to],
+          onChange: function (rangeValue) { 
+              var fromEL = document.getElementById(dataModel.filterId + '_from');
+              var toEL = document.getElementById(dataModel.filterId + '_to');
+              if(fromEL && fromEL) {
+                  fromEL.value = rangeValue.start;
+                  toEL.value = rangeValue.end;
+              }
+          }
+        })
+      });
     </script>
   </body>
 </html>

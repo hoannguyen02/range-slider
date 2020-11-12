@@ -59,8 +59,6 @@ export function init(config) {
     return;
   }
 
-  inputTag.style.display = 'none';
-
   // Todo validate min,max must be number
   if (conf.min === undefined || conf.min === undefined) {
     console.error(`Missing min or max value for range filter`);
@@ -98,15 +96,15 @@ export function init(config) {
   conf.values = prepareArrayValues();
   values.start = conf.min;
   values.end = conf.max;
-  step = sliderWidth / (conf.values.length - 1);
 
   if (conf.set && conf.set.length > 0) {
     const [from, to] = conf.set;
-    values.start = calcIndex(from);
-    values.end = calcIndex(to);
+    values.start = conf.values.indexOf(from);
+    values.end = conf.values.indexOf(to);
   }
 
   // Create scale
+  step = sliderWidth / (conf.values.length - 1);
   for (var i = 0, iLen = conf.values.length; i < iLen; i++) {
     var span = createElement('span'),
       ins = createElement('ins');
@@ -150,19 +148,14 @@ export function init(config) {
     if (dir === 'right') activePointer = pointerR;
   }
 
-  function calcIndex(index) {
-    index = Math.round(index / step);
-    if (index <= 0) index = 0;
-    if (index > conf.values.length - 1) index = conf.values.length - 1;
-    return index;
-  }
-
   function move(e) {
     if (activePointer && !conf.disabled) {
       var coordX = e.type === 'touchmove' ? e.touches[0].clientX : e.pageX,
         index = coordX - sliderLeft - pointerWidth / 2;
 
-      index = calcIndex(index);
+      index = Math.round(index / step);
+      if (index <= 0) index = 0;
+      if (index > conf.values.length - 1) index = conf.values.length - 1;
 
       // Won't set values and emit if index greater smaller than start or greater than end again
       if (index === 0 || index === conf.values.length - 1) {
