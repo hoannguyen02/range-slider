@@ -98,15 +98,15 @@ export function init(config) {
   conf.values = prepareArrayValues();
   values.start = conf.min;
   values.end = conf.max;
+  step = sliderWidth / (conf.values.length - 1);
+
   if (conf.set && conf.set.length > 0) {
     const [from, to] = conf.set;
-    values.start = Math.round(from / conf.step);
-    values.end = Math.round(to / conf.step);
+    values.start = calcIndex(from);
+    values.end = calcIndex(to);
   }
 
   // Create scale
-  step = sliderWidth / (conf.values.length - 1);
-
   for (var i = 0, iLen = conf.values.length; i < iLen; i++) {
     var span = createElement('span'),
       ins = createElement('ins');
@@ -126,8 +126,7 @@ export function init(config) {
   setValues();
 
   // Add events
-  const pointers = slider.querySelectorAll('.' + cls.pointer),
-    pieces = slider.querySelectorAll('span');
+  const pointers = slider.querySelectorAll('.' + cls.pointer);
 
   createEvents(document, 'mousemove touchmove', move.bind(this));
   createEvents(document, 'mouseup touchend touchcancel', drop.bind(this));
@@ -135,8 +134,9 @@ export function init(config) {
   for (var i = 0, iLen = pointers.length; i < iLen; i++)
     createEvents(pointers[i], 'mousedown touchstart', drag.bind(this));
 
-  for (var i = 0, iLen = pieces.length; i < iLen; i++)
-    createEvents(pieces[i], 'click', onClickPiece.bind(this));
+  // const pieces = slider.querySelectorAll('span');
+  // for (var i = 0, iLen = pieces.length; i < iLen; i++)
+  //   createEvents(pieces[i], 'click', onClickPiece.bind(this));
 
   window.addEventListener('resize', onResize.bind(this));
 
@@ -150,14 +150,19 @@ export function init(config) {
     if (dir === 'right') activePointer = pointerR;
   }
 
+  function calcIndex(index) {
+    index = Math.round(index / step);
+    if (index <= 0) index = 0;
+    if (index > conf.values.length - 1) index = conf.values.length - 1;
+    return index;
+  }
+
   function move(e) {
     if (activePointer && !conf.disabled) {
       var coordX = e.type === 'touchmove' ? e.touches[0].clientX : e.pageX,
         index = coordX - sliderLeft - pointerWidth / 2;
 
-      index = Math.round(index / step);
-      if (index <= 0) index = 0;
-      if (index > conf.values.length - 1) index = conf.values.length - 1;
+      index = calcIndex(index);
 
       // Won't set values and emit if index greater smaller than start or greater than end again
       if (index === 0 || index === conf.values.length - 1) {
@@ -199,30 +204,24 @@ export function init(config) {
     activePointer = null;
   }
 
-  function onClickPiece(e) {
-    if (conf.disabled) return;
-
-    var idx = Math.round((e.clientX - sliderLeft) / step);
-
-    if (idx > conf.values.length - 1) idx = conf.values.length - 1;
-    if (idx < 0) idx = 0;
-
-    if (idx - values.start <= values.end - idx) {
-      values.start = idx;
-    } else {
-      values.end = idx;
-    }
-
-    setValues();
-  }
-
   function setValues() {
-    if (values.start > values.end) values.start = values.end;
-
-    pointerL.style.left =
-      values['start'] * step > 0
-        ? values['start'] * step - pointerWidth / 2 + 'px'
-        : -1 + 'px';
+    if (values.start > values.end) {
+      values.start = values.end;
+      pointerL.style.left =
+        values['start'] * step > 0
+          ? values.end * step - (pointerWidth + 4) + 'px'
+          : -1 + 'px';
+    } else if (values.start === values.end) {
+      pointerL.style.left =
+        values['start'] * step > 0
+          ? values.end * step - (pointerWidth + 4) + 'px'
+          : -1 + 'px';
+    } else {
+      pointerL.style.left =
+        values['start'] * step > 0
+          ? values['start'] * step - pointerWidth / 2 + 'px'
+          : -1 + 'px';
+    }
 
     if (conf.tooltip) {
       tipL.innerHTML = conf.values[values.start];
@@ -239,9 +238,12 @@ export function init(config) {
         ? values.end * step - (pointerWidth + 4) + 'px'
         : -1 + 'px';
 
-    if (values.end > conf.values.length - 1)
+    if (values.end > conf.values.length - 1) {
       values.end = conf.values.length - 1;
-    if (values.start < 0) values.start = 0;
+    }
+    if (values.start < 0) {
+      values.start = 0;
+    }
 
     selected.style.width = (values.end - values.start) * step + 'px';
     selected.style.left = values.start * step + 'px';
@@ -251,23 +253,6 @@ export function init(config) {
     if (conf.onChange && typeof conf.onChange === 'function') {
       conf.onChange(JSON.parse(inputTag.value));
     }
-  }
-
-  function onResize() {
-    sliderLeft = slider.getBoundingClientRect().left;
-    sliderWidth = slider.clientWidth;
-    updateScale();
-  }
-
-  function updateScale() {
-    step = sliderWidth / (conf.values.length - 1);
-
-    const pieces = slider.querySelectorAll('span');
-
-    for (var i = 0, iLen = pieces.length; i < iLen; i++)
-      pieces[i].style.width = step + 'px';
-
-    setValues();
   }
 
   function disabled(disabled) {
@@ -306,5 +291,39 @@ export function init(config) {
     if (values.indexOf(conf.max) < 0) values.push(conf.max);
 
     return values;
+  }
+
+  function onResize() {
+    sliderLeft = slider.getBoundingClientRect().left;
+    sliderWidth = slider.clientWidth;
+    updateScale();
+  }
+
+  function updateScale() {
+    step = sliderWidth / (conf.values.length - 1);
+
+    const pieces = slider.querySelectorAll('span');
+
+    for (var i = 0, iLen = pieces.length; i < iLen; i++)
+      pieces[i].style.width = step + 'px';
+
+    setValues();
+  }
+
+  function onClickPiece(e) {
+    if (conf.disabled) return;
+
+    var idx = Math.round((e.clientX - sliderLeft) / step);
+
+    if (idx > conf.values.length - 1) idx = conf.values.length - 1;
+    if (idx < 0) idx = 0;
+
+    if (idx - values.start <= values.end - idx) {
+      values.start = idx;
+    } else {
+      values.end = idx;
+    }
+
+    setValues();
   }
 }
