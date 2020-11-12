@@ -10,6 +10,7 @@
     <h2 style="text-align: center;">Welcome to Range filter Test Page</h2>
     <div style="max-width: 400px; margin: auto;">
       <input type="text" id="range-filter" />
+      <input type="text" id="range-filter-2" />
     </div>
     <script src="<%= process.env.PUBLIC_URL + htmlWebpackPlugin.files.js %>"></script>
     <script>
@@ -19,6 +20,16 @@
         max: 100,
         step: 1,
         set: [0, 0],
+        onChange: function (rangeValue) {
+            console.log(rangeValue);
+        }
+      })
+      RangeFilter.init({
+        inputId: 'range-filter-2',
+        min: 100,
+        max: 1000,
+        step: 100,
+        set: [100, 100],
         onChange: function (rangeValue) {
             console.log(rangeValue);
         }
