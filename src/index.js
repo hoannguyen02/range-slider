@@ -34,7 +34,7 @@ export function init(config) {
   let conf = {
     inputId: '',
     values: [],
-    set: null,
+    set: [],
     width: null,
     scale: false,
     labels: false,
@@ -98,10 +98,10 @@ export function init(config) {
   conf.values = prepareArrayValues();
   values.start = conf.min;
   values.end = conf.max;
-  if (conf.set && conf.set.length && checkInitial(conf)) {
-    var vals = conf.set;
-    values.start = conf.values.indexOf(vals[0]);
-    values.end = conf.set[1] ? conf.values.indexOf(vals[1]) : null;
+  if (conf.set && conf.set.length > 0) {
+    const [from, to] = conf.set;
+    values.start = Math.round(from / conf.step);
+    values.end = Math.round(to / conf.step);
   }
 
   // Create scale
@@ -122,6 +122,8 @@ export function init(config) {
 
     ins.style.marginLeft = (ins.clientWidth / 2) * -1 + 'px';
   }
+
+  setValues();
 
   // Add events
   const pointers = slider.querySelectorAll('.' + cls.pointer),
@@ -304,14 +306,5 @@ export function init(config) {
     if (values.indexOf(conf.max) < 0) values.push(conf.max);
 
     return values;
-  }
-
-  function checkInitial(conf) {
-    if (!conf.set || conf.set.length < 1) return null;
-    if (conf.values.indexOf(conf.set[0]) < 0) return null;
-
-    if (conf.set.length < 2 || conf.values.indexOf(conf.set[1]) < 0)
-      return null;
-    return true;
   }
 }
