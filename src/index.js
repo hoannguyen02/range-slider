@@ -160,8 +160,6 @@ function drag(e) {
   var dir = e.target.getAttribute('data-dir');
   if (dir === 'left') activePointer = pointerL;
   if (dir === 'right') activePointer = pointerR;
-
-  slider.classList.add('sliding');
 }
 
 function move(e) {
@@ -231,18 +229,19 @@ function onClickPiece(e) {
 }
 
 function setValues() {
-  var activePointer = 'start';
-
   if (values.start > values.end) values.start = values.end;
 
-  pointerL.style.left = values[activePointer] * step - pointerWidth / 2 + 'px';
+  pointerL.style.left = values['start'] * step - pointerWidth / 2 + 'px';
 
   if (conf.tooltip) {
     tipL.innerHTML = conf.values[values.start];
     tipR.innerHTML = conf.values[values.end];
   }
 
-  inputTag.value = [conf.values[values.start], conf.values[values.end]];
+  inputTag.value = JSON.stringify({
+    start: conf.values[values.start],
+    end: conf.values[values.end],
+  });
 
   pointerR.style.left = values.end * step - pointerWidth / 2 + 'px';
 
@@ -255,7 +254,7 @@ function setValues() {
 
 function onChange() {
   if (conf.onChange && typeof conf.onChange === 'function') {
-    conf.onChange(inputTag.value);
+    conf.onChange(JSON.parse(inputTag.value));
   }
 }
 
