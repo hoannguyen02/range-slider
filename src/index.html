@@ -40,10 +40,9 @@
           onChange: function (rangeValue) { 
               var fromEL = document.getElementById(dataModel.filterId + '_from');
               var toEL = document.getElementById(dataModel.filterId + '_to');
-              var values = rangeValue.split(',');
-              if(toEL && fromEL) {
-                  fromEL.value = values[0];
-                  toEL.value = values[1];
+              if(fromEL && fromEL) {
+                  fromEL.value = rangeValue.start;
+                  toEL.value = rangeValue.end;
               }
           }
         })
