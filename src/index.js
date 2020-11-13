@@ -176,7 +176,10 @@ export function init(config) {
           : -16 + 'px';
     }
 
-    inputTag.value = `${conf.values[values.start]},${conf.values[values.end]}`;
+    inputTag.value = JSON.stringify({
+      start: conf.values[values.start],
+      end: conf.values[values.end],
+    });
 
     const [from, to] = conf.set;
     if (firstRender && from === to && (from === conf.min || from < conf.min)) {
@@ -197,7 +200,7 @@ export function init(config) {
 
   function onChange() {
     if (conf.onChange && typeof conf.onChange === 'function') {
-      conf.onChange(inputTag.value);
+      conf.onChange(JSON.parse(inputTag.value));
     }
   }
 
