@@ -7,6 +7,15 @@
   font-family: Arial, Helvetica, sans-serif;
   height: 32px;
   position: relative;
+  width: calc(100% - 32px);
+  margin-left: 16px;
+}
+.rf-container .rf-bg {
+  width: calc(100% + 30px);
+  margin-left: -15px;
+}
+.rf-container .rf-selected {
+  width: 100%;
 }
 .rf-container .rf-bg,
 .rf-container .rf-selected {
@@ -15,7 +24,6 @@
   left: 0;
   position: absolute;
   top: 15px;
-  width: 100%;
 }
 .rf-container .rf-selected {
   background-color: #2b72cb;
@@ -35,64 +43,4 @@
   border-radius: 14px;
   background-color: #2b72cb;
   border: 3px solid #fff;
-}
-.rf-container .rf-scale {
-  left: 0;
-  position: absolute;
-  top: 5px;
-  white-space: nowrap;
-}
-.rf-container .rf-scale span {
-  float: left;
-  position: relative;
-}
-.rf-container .rf-scale span::before {
-  background-color: #ededed;
-  content: '';
-  height: 8px;
-  left: 0;
-  position: absolute;
-  top: 10px;
-  width: 1px;
-}
-.rf-container.rf-noscale span::before {
-  display: none;
-}
-.rf-container.rf-noscale span:first-child::before,
-.rf-container.rf-noscale span:last-child::before {
-  display: block;
-}
-.rf-container .rf-scale span:last-child {
-  margin-left: -1px;
-  width: 0px;
-}
-.rf-container .rf-scale span ins {
-  color: #333;
-  display: inline-block;
-  font-size: 12px;
-  margin-top: 20px;
-  text-decoration: none;
-}
-.rf-container.disabled .rf-scale span ins {
-  color: #999;
-}
-.rf-tooltip {
-  color: #333;
-  width: auto;
-  min-width: 60px;
-  height: 30px;
-  position: relative;
-  background: #fff;
-  border: 1px solid #00969b;
-  border-radius: 3px;
-  position: absolute;
-  transform: translate(-50%, -35px);
-  left: 13px;
-  text-align: center;
-  font-size: 13px;
-  padding: 6px 10px 0;
-}
-.rf-container.disabled .rf-tooltip {
-  border-color: #ccc;
-  color: #999;
 }
