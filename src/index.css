@@ -4,6 +4,7 @@
   display: table;
 }
 .rf-container {
+  font-family: Arial, Helvetica, sans-serif;
   height: 32px;
   position: relative;
   width: calc(100% - 32px);
