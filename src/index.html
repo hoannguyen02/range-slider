@@ -45,10 +45,10 @@
           }
         })
         fromEL.oninput =  debounce(function (event) { 
-          console.log(event.target.value)
+          RangeFilter.update(event.target.value, false);
          }, 500)
         fromEL.oninput =  debounce(function (event) { 
-          console.log(event.target.value)
+          RangeFilter.update(event.target.value, true);
          }, 500)
       });
     </script>
