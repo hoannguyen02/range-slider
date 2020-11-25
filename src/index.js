@@ -187,15 +187,17 @@ export function init(config) {
       secondeRender = true;
       pointerR.style.left =
         (conf.values.length - 1) * step - (pointerWidth / 2 - 1) + 'px';
+      selected.style.width =
+        (conf.values.length - 1 - conf.values[0]) * step + 'px';
+      selected.style.left = conf.values[0] * step + 'px';
     } else {
       pointerR.style.left =
         values.end * step > 0
           ? values.end * step - (pointerWidth / 2 - 1) + 'px'
           : -16 + 'px';
+      selected.style.width = (values.end - values.start) * step + 'px';
+      selected.style.left = values.start * step + 'px';
     }
-
-    selected.style.width = (values.end - values.start) * step + 'px';
-    selected.style.left = values.start * step + 'px';
   }
 
   function onChange() {
