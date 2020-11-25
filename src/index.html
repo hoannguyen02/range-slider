@@ -31,6 +31,8 @@
     <script>
       Array.prototype.slice.call(document.querySelectorAll("[id^='input-range-filter']")).forEach(function (item) {
         var dataModel = JSON.parse(item.getAttribute('data-model'));
+        var fromEL = document.getElementById(dataModel.filterId + '_from');
+        var toEL = document.getElementById(dataModel.filterId + '_to');
         RangeFilter && RangeFilter.init({
           inputId: item.id,
           min: dataModel.start,
@@ -38,14 +40,16 @@
           step: dataModel.step,
           set: [dataModel.from, dataModel.to],
           onChange: function (rangeValue) { 
-              var fromEL = document.getElementById(dataModel.filterId + '_from');
-              var toEL = document.getElementById(dataModel.filterId + '_to');
-              if(fromEL && fromEL) {
-                  fromEL.value = rangeValue.start;
-                  toEL.value = rangeValue.end;
-              }
+            fromEL.value = rangeValue.start;
+            toEL.value = rangeValue.end;
           }
         })
+        fromEL.oninput =  debounce(function (event) { 
+          console.log(event.target.value)
+         }, 500)
+        fromEL.oninput =  debounce(function (event) { 
+          console.log(event.target.value)
+         }, 500)
       });
     </script>
   </body>

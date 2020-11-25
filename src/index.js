@@ -1,5 +1,9 @@
 import './index.css';
+import { debounce } from './debounce';
 
+if (!window.debounce) {
+  window.debounce = debounce;
+}
 const cls = {
   container: 'rf-container rf-clearfix',
   background: 'rf-bg',
