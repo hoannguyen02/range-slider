@@ -18,6 +18,7 @@
     <div class="container">
       <input type="hidden" id="input-range-filter-1556735" data-model="{&quot;seoFollow&quot;:true,&quot;filterId&quot;:1556735,&quot;solrFieldName&quot;:&quot;motoring__mileage_kilometers&quot;,&quot;start&quot;:0,&quot;end&quot;:500000,&quot;density&quot;:10,&quot;filterType&quot;:&quot;SliderRange&quot;,&quot;from&quot;:155000,&quot;to&quot;:500000,&quot;step&quot;:5000,&quot;order&quot;:6,&quot;isSelected&quot;:true,&quot;GroupName&quot;:&quot;Kilometerstand&quot;,&quot;FieldNames&quot;:&quot;motoring__mileage_kilometers&quot;,&quot;DisplayFormat&quot;:&quot;{0} km&quot;,&quot;ValidationError&quot;:&quot;Bitte geben Sie einen Wert grösser als 0 und kleiner als 500000 ein.&quot;,&quot;url&quot;:&quot;/auto/mercedes&quot;}" value="{&quot;start&quot;:500000,&quot;end&quot;:500000}">
       <input type="hidden" id="input-range-filter-1556727" data-model="{&quot;seoFollow&quot;:true,&quot;filterId&quot;:1556727,&quot;solrFieldName&quot;:&quot;motoring__engine_displacement_cubic_centimeters&quot;,&quot;start&quot;:0,&quot;end&quot;:10000,&quot;density&quot;:10,&quot;filterType&quot;:&quot;SliderRange&quot;,&quot;from&quot;:0,&quot;to&quot;:0,&quot;step&quot;:100,&quot;order&quot;:8,&quot;isSelected&quot;:false,&quot;GroupName&quot;:&quot;Hubraum (CCM)&quot;,&quot;FieldNames&quot;:&quot;motoring__engine_displacement_cubic_centimeters&quot;,&quot;DisplayFormat&quot;:&quot;{0} cm³&quot;,&quot;ValidationError&quot;:&quot;Bitte geben Sie einen Wert grösser als 0 und kleiner als 10000 ein.&quot;,&quot;url&quot;:&quot;/auto/mercedes?motoring__mileage_kilometers_from=155000&amp;motoring__mileage_kilometers_to=500000&quot;}" value="{&quot;start&quot;:0,&quot;end&quot;:0}">
+      <input type="hidden" id="input-range-filter-1556749" data-model="{&quot;seoFollow&quot;:true,&quot;filterId&quot;:1556749,&quot;solrFieldName&quot;:&quot;motoring__model_year&quot;,&quot;start&quot;:1980,&quot;end&quot;:2021,&quot;density&quot;:10,&quot;filterType&quot;:&quot;SliderRange&quot;,&quot;from&quot;:0,&quot;to&quot;:0,&quot;step&quot;:1,&quot;order&quot;:3,&quot;isSelected&quot;:false,&quot;GroupName&quot;:&quot;Erstzulassung&quot;,&quot;FieldNames&quot;:&quot;motoring__model_year&quot;,&quot;DisplayFormat&quot;:&quot;{0}&quot;,&quot;ValidationError&quot;:&quot;Bitte geben Sie ein Jahr grösser als 1980 und kleiner als 2021 ein.&quot;,&quot;url&quot;:&quot;/auto/mercedes&quot;}" value="{}">
     </div>
     <div class="value">
       <input class="autopost" type="number" id="1556735_from" name="1556735_from">
@@ -26,6 +27,10 @@
     <div class="value">
       <input class="autopost" type="number" id="1556727_from" name="1556727_from">
       <input class="autopost" type="number" id="1556727_to" name="1556727_to" >
+    </div>
+    <div class="value">
+      <input class="autopost" type="number" id="1556749_from" name="1556749_from">
+      <input class="autopost" type="number" id="1556749_to" name="1556749_to" >
     </div>
     <script src="<%= process.env.PUBLIC_URL + htmlWebpackPlugin.files.js %>"></script>
     <script>
@@ -42,14 +47,10 @@
           onChange: function (rangeValue) { 
             fromEL.value = rangeValue.start;
             toEL.value = rangeValue.end;
-          }
+          },
+          fromEL,
+          toEL,
         })
-        fromEL.oninput =  debounce(function (event) { 
-          RangeFilter.update(event.target.value, false);
-         }, 500)
-        fromEL.oninput =  debounce(function (event) { 
-          RangeFilter.update(event.target.value, true);
-         }, 500)
       });
     </script>
   </body>

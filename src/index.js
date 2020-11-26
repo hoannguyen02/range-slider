@@ -34,6 +34,8 @@ export function init(config) {
   let emitChange = true;
   let firstRender = true;
   let secondeRender = false;
+  let fromLeft = null;
+  let toLeft = null;
   // TODO: Rename values bellow for better understand
   let values = {
     start: null,
@@ -42,29 +44,44 @@ export function init(config) {
   let conf = {
     inputId: '',
     values: [],
+    min: null,
+    max: null,
     set: [],
     width: null,
     step: null,
     onChange: null,
+    fromEL: null,
+    toEL: null,
   };
 
   for (var i in conf) {
-    if (conf.hasOwnProperty(i)) conf[i] = conf[i];
+    if (conf.hasOwnProperty(i)) conf[i] = config[i];
   }
-
-  conf = config;
-  if (!config.inputId) {
+  // Validate input element
+  if (!conf.inputId) {
     console.error('Need to provide element with id to generate range filter');
     return;
   }
   inputTag = document.getElementById(conf.inputId);
   if (!inputTag) {
-    console.error(`Cannot find input element with id ${config.inputId}`);
+    console.error(`Cannot find input element with id ${conf.inputId}`);
     return;
+  }
+  // Add input events to input elements
+  if (conf.fromEL) {
+    conf.fromEL.oninput = debounce(function(event) {
+      onInput(parseInt(event.target.value), true);
+    }, 500);
+  }
+
+  if (conf.toEL) {
+    conf.toEL.oninput = debounce(function(event) {
+      onInput(parseInt(event.target.value), false);
+    }, 500);
   }
 
   // Todo validate min,max must be number
-  if (conf.min === undefined || conf.min === undefined) {
+  if (conf.min === undefined || conf.max === undefined) {
     console.error(`Missing min or max value for range filter`);
     return;
   }
@@ -94,6 +111,10 @@ export function init(config) {
     const [from, to] = conf.set;
     values.start = conf.values.indexOf(from);
     values.end = conf.values.indexOf(to);
+    if (from > conf.min || to > conf.min) {
+      conf.fromEL.value = from;
+      conf.toEL.value = to;
+    }
   }
 
   step = sliderWidth / (conf.values.length - 1);
@@ -109,6 +130,27 @@ export function init(config) {
     createEvents(pointers[i], 'mousedown touchstart', drag.bind(this));
 
   window.addEventListener('resize', onResize.bind(this));
+
+  function onInput(inputVal, start) {
+    let value = inputVal;
+    if (value > conf.max || value < conf.min) return;
+    if (toLeft === null) toLeft = sliderWidth;
+    if (fromLeft === null) fromLeft = 0;
+    /**
+     *    x1(value) - min         x2
+     *    ---------------- = ------------ => x2 = sliderWidth*(value - min)/(max-min)
+     *        max - min        sliderWidth
+     */
+    if (start) {
+      fromLeft = (sliderWidth * (value - conf.min)) / (conf.max - conf.min);
+      pointerL.style.left = fromLeft - pointerWidth / 2 + 'px';
+    } else {
+      toLeft = (sliderWidth * (value - conf.min)) / (conf.max - conf.min);
+      pointerR.style.left = toLeft - (pointerWidth / 2 - 1) + 'px';
+    }
+    selected.style.width = toLeft - fromLeft + 'px';
+    selected.style.left = fromLeft + 'px';
+  }
 
   function drag(e) {
     e.preventDefault();
@@ -184,7 +226,7 @@ export function init(config) {
     } else {
       pointerL.style.left =
         values['start'] * step > 0
-          ? values['start'] * step - pointerWidth / 2 + 'px'
+          ? values['start'] * step - pointerWidth + 'px'
           : -16 + 'px';
     }
 
@@ -199,9 +241,8 @@ export function init(config) {
       secondeRender = true;
       pointerR.style.left =
         (conf.values.length - 1) * step - (pointerWidth / 2 - 1) + 'px';
-      selected.style.width =
-        (conf.values.length - 1 - conf.values[0]) * step + 'px';
-      selected.style.left = conf.values[0] * step + 'px';
+      selected.style.width = sliderWidth + 'px';
+      selected.style.left = 0 + 'px';
     } else {
       pointerR.style.left =
         values.end * step > 0
