@@ -11,14 +11,6 @@ const cls = {
   pointer: 'rf-pointer',
 };
 
-export function update(value, start) {
-  if (start) {
-    console.log(value);
-  } else {
-    console.log(value);
-  }
-}
-
 export function init(config) {
   let inputTag = null;
   let slider = null;

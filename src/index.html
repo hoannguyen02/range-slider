@@ -61,7 +61,14 @@
               fromEL.value = rangeValue.start;
             }
             if(rangeValue.end !== undefined) {
-              toEL.value = rangeValue.end;
+              var end = rangeValue.end;
+              toEL.value = end;
+              if(end <= 0) {
+                fromEL.value = 0;
+              }
+              if(end <= parseInt(fromEL.value || 0) ) {
+                fromEL.value = end;
+              }
             }
           },
         })
