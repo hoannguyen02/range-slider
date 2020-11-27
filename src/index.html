@@ -42,11 +42,16 @@
           inputId: item.id,
           min: dataModel.start,
           max: dataModel.end,
+          values: [dataModel.start, dataModel.end],
           step: dataModel.step,
           set: [dataModel.from, dataModel.to],
           onChange: function (rangeValue) { 
-            fromEL.value = rangeValue.start;
-            toEL.value = rangeValue.end;
+            if(rangeValue.start !== undefined) {
+              fromEL.value = rangeValue.start;
+            }
+            if(rangeValue.end !== undefined) {
+              toEL.value = rangeValue.end;
+            }
           },
           fromEL,
           toEL,

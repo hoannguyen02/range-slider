@@ -36,6 +36,9 @@ export function init(config) {
   let secondeRender = false;
   let fromLeft = null;
   let toLeft = null;
+  // Check to emit left, right or both
+  let firstLeftEmit = false;
+  let firstRightEmit = false;
   // TODO: Rename values bellow for better understand
   let values = {
     start: null,
@@ -122,14 +125,14 @@ export function init(config) {
   setValues();
 
   // Add events
-  createEvents(document, 'mousemove touchmove', move.bind(this));
-  createEvents(document, 'mouseup touchend touchcancel', drop.bind(this));
+  createEvents(document, 'mousemove touchmove', move);
+  createEvents(document, 'mouseup touchend touchcancel', drop);
 
   const pointers = slider.querySelectorAll('.' + cls.pointer);
   for (let i = 0, iLen = pointers.length; i < iLen; i++)
-    createEvents(pointers[i], 'mousedown touchstart', drag.bind(this));
+    createEvents(pointers[i], 'mousedown touchstart', drag);
 
-  window.addEventListener('resize', onResize.bind(this));
+  // window.addEventListener('resize', onResize);
 
   function onInput(inputVal, start) {
     let value = inputVal;
@@ -155,8 +158,18 @@ export function init(config) {
   function drag(e) {
     e.preventDefault();
     let dir = e.target.getAttribute('data-dir');
-    if (dir === 'left') activePointer = pointerL;
-    if (dir === 'right') activePointer = pointerR;
+    if (dir === 'left') {
+      activePointer = pointerL;
+      firstLeftEmit = true;
+    }
+    if (dir === 'right') {
+      activePointer = pointerR;
+      firstRightEmit = true;
+    }
+  }
+
+  function drop() {
+    activePointer = null;
   }
 
   function move(e) {
@@ -191,6 +204,9 @@ export function init(config) {
             secondeRender = false;
           }
         } else {
+          if (secondeRender) {
+            secondeRender = false;
+          }
           newEnd = index;
         }
         // Won't set values and emit if the same values
@@ -205,10 +221,6 @@ export function init(config) {
         onChange();
       }
     }
-  }
-
-  function drop() {
-    activePointer = null;
   }
 
   function setValues() {
@@ -230,10 +242,22 @@ export function init(config) {
           : -16 + 'px';
     }
 
-    inputTag.value = JSON.stringify({
-      start: conf.values[values.start],
-      end: conf.values[values.end],
-    });
+    if (firstLeftEmit && firstRightEmit) {
+      inputTag.value = JSON.stringify({
+        start: conf.values[values.start],
+        end: conf.values[values.end],
+      });
+    } else if (firstLeftEmit) {
+      inputTag.value = JSON.stringify({
+        start: conf.values[values.start],
+        end: undefined,
+      });
+    } else {
+      inputTag.value = JSON.stringify({
+        start: undefined,
+        end: conf.values[values.end],
+      });
+    }
 
     const [from, to] = conf.set;
     if (firstRender && from === to && (from === conf.min || from < conf.min)) {
