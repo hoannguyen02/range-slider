@@ -220,32 +220,34 @@ export function init(config) {
 
   function onInput(inputVal, start) {
     let value = inputVal;
-    const [from, to] = conf.set;
-    if (value > conf.max || value < conf.min) return;
-    if (toLeft === null) toLeft = sliderWidth;
-    if (fromLeft === null) fromLeft = 0;
-    /**
-     *    x1(value) - min         x2
-     *    ---------------- = --------------- => x2 = sliderWidth*(value - min)/(max-min)
-     *       max - min        sliderWidth
-     */
-    if (start) {
-      if (values.end !== 0 && value > conf.values[values.end]) return;
-      if (to > conf.min) {
-        toLeft = calcLeft(to);
+    // Make sure it valid value
+    if (value < conf.max && value > conf.min) {
+      const [from, to] = conf.set;
+      if (toLeft === null) toLeft = sliderWidth;
+      if (fromLeft === null) fromLeft = 0;
+      /**
+       *    x1(value) - min         x2
+       *    ---------------- = --------------- => x2 = sliderWidth*(value - min)/(max-min)
+       *       max - min        sliderWidth
+       */
+      if (start) {
+        if (values.end !== 0 && value > conf.values[values.end]) return;
+        if (to > conf.min) {
+          toLeft = calcLeft(to);
+        }
+        fromLeft = calcLeft(value);
+        pointerL.style.left = fromLeft - pointerWidth / 2 + 'px';
+      } else {
+        if (value < conf.values[values.start]) return;
+        if (from > conf.min) {
+          fromLeft = calcLeft(from);
+        }
+        toLeft = calcLeft(value);
+        pointerR.style.left = toLeft - (pointerWidth / 2 - 1) + 'px';
       }
-      fromLeft = calcLeft(value);
-      pointerL.style.left = fromLeft - pointerWidth / 2 + 'px';
-    } else {
-      if (value < conf.values[values.start]) return;
-      if (from > conf.min) {
-        fromLeft = calcLeft(from);
-      }
-      toLeft = calcLeft(value);
-      pointerR.style.left = toLeft - (pointerWidth / 2 - 1) + 'px';
+      selected.style.width = toLeft - fromLeft + 'px';
+      selected.style.left = fromLeft + 'px';
     }
-    selected.style.width = toLeft - fromLeft + 'px';
-    selected.style.left = fromLeft + 'px';
   }
 
   function drag(e) {
