@@ -72,15 +72,23 @@ export function init(config) {
   }
   // Add input events to input elements
   if (conf.fromEL) {
-    conf.fromEL.oninput = debounce(function(event) {
-      onInput(parseInt(event.target.value), true);
-    }, 500);
+    createEvents(
+      conf.fromEL,
+      'keyup mouseup',
+      debounce(function(event) {
+        onInput(parseInt(event.target.value), true);
+      }, 500)
+    );
   }
 
   if (conf.toEL) {
-    conf.toEL.oninput = debounce(function(event) {
-      onInput(parseInt(event.target.value), false);
-    }, 500);
+    createEvents(
+      conf.toEL,
+      'keyup mouseup',
+      debounce(function(event) {
+        onInput(parseInt(event.target.value), false);
+      }, 500)
+    );
   }
 
   // Todo validate min,max must be number
@@ -141,7 +149,7 @@ export function init(config) {
   function setValuesBasedOnInput(from, to) {
     fromLeft = calcLeft(from);
     pointerL.style.left = fromLeft - pointerWidth / 2 + 'px';
-    toLeft = calcLeft(to);
+    toLeft = to === conf.min || to === 0 ? calcLeft(conf.max) : calcLeft(to);
     pointerR.style.left = toLeft - (pointerWidth / 2 - 1) + 'px';
     selected.style.width = toLeft - fromLeft + 'px';
     selected.style.left = fromLeft + 'px';
