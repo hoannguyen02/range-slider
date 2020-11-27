@@ -84,7 +84,7 @@ export function init(config) {
   if (conf.toEL) {
     createEvents(
       conf.toEL,
-      'keyup mouseup',
+      'keyup change',
       debounce(function(event) {
         onInput(parseInt(event.target.value), false);
       }, 500)
@@ -150,7 +150,7 @@ export function init(config) {
   // window.addEventListener('resize', onResize);
 
   function setValuesBasedOnInput(from, to) {
-    fromLeft = calcLeft(from);
+    fromLeft = from === conf.min || from === 0 ? -8 : calcLeft(from);
     pointerL.style.left = fromLeft - pointerWidth / 2 + 'px';
     toLeft = to === conf.min || to === 0 ? calcLeft(conf.max) : calcLeft(to);
     pointerR.style.left = toLeft - (pointerWidth / 2 - 1) + 'px';
