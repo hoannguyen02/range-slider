@@ -105,10 +105,10 @@ export function init(config) {
   sliderWidth = slider.clientWidth;
   pointerWidth = pointerL.clientWidth;
 
-  // Set values
+  // Values
   conf.values = prepareArrayValues();
-  values.start = conf.min;
-  values.end = conf.max;
+  // Step
+  step = sliderWidth / (conf.values.length - 1);
   // Initial value from set
   if (conf.set && conf.set.length > 0) {
     const [from, to] = conf.set;
@@ -121,11 +121,12 @@ export function init(config) {
     if (to > conf.min) {
       conf.toEL.value = to;
     }
+    if (conf.values.indexOf(from) === -1 || conf.values.indexOf(to) === -1) {
+      setValuesBasedOnInput(from, to);
+    } else {
+      setValuesBasedOnPointer();
+    }
   }
-
-  step = sliderWidth / (conf.values.length - 1);
-
-  setValues();
 
   // Add events
   createEvents(document, 'mousemove touchmove', move);
@@ -137,8 +138,78 @@ export function init(config) {
 
   // window.addEventListener('resize', onResize);
 
+  function setValuesBasedOnInput(from, to) {
+    fromLeft = calcLeft(from);
+    pointerL.style.left = fromLeft - pointerWidth / 2 + 'px';
+    toLeft = calcLeft(to);
+    pointerR.style.left = toLeft - (pointerWidth / 2 - 1) + 'px';
+    selected.style.width = toLeft - fromLeft + 'px';
+    selected.style.left = fromLeft + 'px';
+  }
+
+  function setValuesBasedOnPointer() {
+    if (values.start > values.end) {
+      values.start = values.end;
+      pointerL.style.left =
+        values['start'] * step > 0
+          ? values.end * step - pointerWidth / 2 + 'px'
+          : -16 + 'px';
+    } else if (values.start === values.end) {
+      pointerL.style.left =
+        values['start'] * step > 0
+          ? values.end * step - pointerWidth / 2 + 'px'
+          : -16 + 'px';
+    } else {
+      pointerL.style.left =
+        values['start'] * step > 0
+          ? values['start'] * step - pointerWidth + 'px'
+          : -16 + 'px';
+    }
+
+    if (firstLeftEmit && firstRightEmit) {
+      inputTag.value = JSON.stringify({
+        start: conf.values[values.start],
+        end: conf.values[values.end],
+      });
+    } else if (firstLeftEmit) {
+      inputTag.value = JSON.stringify({
+        start: conf.values[values.start],
+        end: undefined,
+      });
+    } else if (firstRightEmit) {
+      inputTag.value = JSON.stringify({
+        start: undefined,
+        end: conf.values[values.end],
+      });
+    } else {
+      // Won't set value
+    }
+
+    const [from, to] = conf.set;
+    if (firstRender && from === to && (from === conf.min || from < conf.min)) {
+      firstRender = false;
+      secondeRender = true;
+      pointerR.style.left =
+        (conf.values.length - 1) * step - (pointerWidth / 2 - 1) + 'px';
+      selected.style.width = sliderWidth + 'px';
+      selected.style.left = 0 + 'px';
+    } else {
+      pointerR.style.left =
+        values.end * step > 0
+          ? values.end * step - (pointerWidth / 2 - 1) + 'px'
+          : -16 + 'px';
+      selected.style.width = (values.end - values.start) * step + 'px';
+      selected.style.left = values.start * step + 'px';
+    }
+  }
+
+  function calcLeft(value) {
+    return (sliderWidth * (value - conf.min)) / (conf.max - conf.min);
+  }
+
   function onInput(inputVal, start) {
     let value = inputVal;
+    const [from, to] = conf.set;
     if (value > conf.max || value < conf.min) return;
     if (toLeft === null) toLeft = sliderWidth;
     if (fromLeft === null) fromLeft = 0;
@@ -149,19 +220,21 @@ export function init(config) {
      */
     if (start) {
       if (values.end !== 0 && value > conf.values[values.end]) return;
+      if (to > conf.min) {
+        toLeft = calcLeft(to);
+      }
       fromLeft = calcLeft(value);
       pointerL.style.left = fromLeft - pointerWidth / 2 + 'px';
     } else {
       if (value < conf.values[values.start]) return;
+      if (from > conf.min) {
+        fromLeft = calcLeft(from);
+      }
       toLeft = calcLeft(value);
       pointerR.style.left = toLeft - (pointerWidth / 2 - 1) + 'px';
     }
     selected.style.width = toLeft - fromLeft + 'px';
     selected.style.left = fromLeft + 'px';
-  }
-
-  function calcLeft(value) {
-    return (sliderWidth * (value - conf.min)) / (conf.max - conf.min);
   }
 
   function drag(e) {
@@ -226,65 +299,9 @@ export function init(config) {
           values.end = newEnd;
         }
 
-        setValues();
+        setValuesBasedOnPointer();
         onChange();
       }
-    }
-  }
-
-  function setValues() {
-    if (values.start > values.end) {
-      values.start = values.end;
-      pointerL.style.left =
-        values['start'] * step > 0
-          ? values.end * step - pointerWidth / 2 + 'px'
-          : -16 + 'px';
-    } else if (values.start === values.end) {
-      pointerL.style.left =
-        values['start'] * step > 0
-          ? values.end * step - pointerWidth / 2 + 'px'
-          : -16 + 'px';
-    } else {
-      pointerL.style.left =
-        values['start'] * step > 0
-          ? values['start'] * step - pointerWidth + 'px'
-          : -16 + 'px';
-    }
-
-    if (firstLeftEmit && firstRightEmit) {
-      inputTag.value = JSON.stringify({
-        start: conf.values[values.start],
-        end: conf.values[values.end],
-      });
-    } else if (firstLeftEmit) {
-      inputTag.value = JSON.stringify({
-        start: conf.values[values.start],
-        end: undefined,
-      });
-    } else if (firstRightEmit) {
-      inputTag.value = JSON.stringify({
-        start: undefined,
-        end: conf.values[values.end],
-      });
-    } else {
-      // Won't set value
-    }
-
-    const [from, to] = conf.set;
-    if (firstRender && from === to && (from === conf.min || from < conf.min)) {
-      firstRender = false;
-      secondeRender = true;
-      pointerR.style.left =
-        (conf.values.length - 1) * step - (pointerWidth / 2 - 1) + 'px';
-      selected.style.width = sliderWidth + 'px';
-      selected.style.left = 0 + 'px';
-    } else {
-      pointerR.style.left =
-        values.end * step > 0
-          ? values.end * step - (pointerWidth / 2 - 1) + 'px'
-          : -16 + 'px';
-      selected.style.width = (values.end - values.start) * step + 'px';
-      selected.style.left = values.start * step + 'px';
     }
   }
 
@@ -331,6 +348,6 @@ export function init(config) {
     sliderLeft = slider.getBoundingClientRect().left;
     sliderWidth = slider.clientWidth;
     step = sliderWidth / (conf.values.length - 1);
-    setValues();
+    setValuesBasedOnPointer();
   }
 }
