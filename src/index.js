@@ -129,7 +129,10 @@ export function init(config) {
     if (to > conf.min) {
       conf.toEL.value = to;
     }
-    if (conf.values.indexOf(from) === -1 || conf.values.indexOf(to) === -1) {
+    if (
+      (from !== 0 || to !== 0) &&
+      (conf.values.indexOf(from) === -1 || conf.values.indexOf(to) === -1)
+    ) {
       setValuesBasedOnInput(from, to);
     } else {
       setValuesBasedOnPointer();
