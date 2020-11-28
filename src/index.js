@@ -19,6 +19,7 @@ export function init(config) {
   let pointerWidth = 0;
   let pointerR = null;
   let pointerL = null;
+  let pointerTemp = null;
   let activePointer = null;
   let selected = null;
   let step = 0;
@@ -48,6 +49,11 @@ export function init(config) {
     fromEL: null,
     toEL: null,
   };
+
+  // Decide to choose which pointer incase they're place together between min and max
+  let currentIndex = null;
+  let pointerPlaceTogether = false;
+  let counter = 0;
 
   for (var i in conf) {
     if (conf.hasOwnProperty(i)) conf[i] = config[i];
@@ -93,12 +99,15 @@ export function init(config) {
   slider = createElement('div', cls.container);
   slider.innerHTML = '<div class="rf-bg"></div>';
   selected = createElement('div', cls.selected);
-  pointerL = createElement('div', cls.pointer, ['dir', 'left']);
   slider.appendChild(selected);
+  // Pointers
+  pointerL = createElement('div', cls.pointer, ['dir', 'left']);
   slider.appendChild(pointerL);
-
   pointerR = createElement('div', cls.pointer, ['dir', 'right']);
   slider.appendChild(pointerR);
+  pointerTemp = createElement('div', cls.pointer, ['dir', 'temp']);
+  pointerTemp.style.cssText = 'display: none; z-index: 2';
+  slider.appendChild(pointerTemp);
   inputTag.parentNode.insertBefore(slider, inputTag.nextSibling);
 
   sliderLeft = slider.getBoundingClientRect().left;
@@ -132,12 +141,12 @@ export function init(config) {
   }
 
   // Add events
-  createEvents(document, 'mousemove touchmove', move);
-  createEvents(document, 'mouseup touchend touchcancel', drop);
+  createEvents(document, 'mousemove touchmove', onMove);
+  createEvents(document, 'mouseup touchend touchcancel', onDrop);
 
   const pointers = slider.querySelectorAll('.' + cls.pointer);
   for (let i = 0, iLen = pointers.length; i < iLen; i++)
-    createEvents(pointers[i], 'mousedown touchstart', drag);
+    createEvents(pointers[i], 'mousedown touchstart', onDrag);
 
   // window.addEventListener('resize', onResize);
 
@@ -153,20 +162,26 @@ export function init(config) {
   function setValuesBasedOnPointer() {
     if (values.start > values.end) {
       values.start = values.end;
-      pointerL.style.left =
+      const pointerStyle =
         values['start'] * step > 0
           ? values.end * step - pointerWidth / 2 + 'px'
           : -16 + 'px';
+      pointerL.style.left = pointerStyle;
+      pointerTemp.style.left = pointerStyle;
     } else if (values.start === values.end) {
-      pointerL.style.left =
+      const pointerStyle =
         values['start'] * step > 0
           ? values.end * step - pointerWidth / 2 + 'px'
           : -16 + 'px';
+      pointerL.style.left = pointerStyle;
+      pointerTemp.style.left = pointerStyle;
     } else {
-      pointerL.style.left =
+      const pointerStyle =
         values['start'] * step > 0
           ? values['start'] * step - pointerWidth + 'px'
           : -16 + 'px';
+      pointerL.style.left = pointerStyle;
+      pointerTemp.style.left = pointerStyle;
     }
 
     if (firstLeftEmit && firstRightEmit) {
@@ -192,15 +207,19 @@ export function init(config) {
     if (firstRender && from === to && (from === conf.min || from < conf.min)) {
       firstRender = false;
       secondeRender = true;
-      pointerR.style.left =
-        (conf.values.length - 1) * step - (pointerWidth / 2 - 1) + 'px';
+      const pointerStyle =
+        (conf.values.length - 1) * step - pointerWidth / 2 + 1 + 'px';
+      pointerR.style.left = pointerStyle;
+      pointerTemp.style.left = pointerStyle;
       selected.style.width = sliderWidth + 'px';
       selected.style.left = 0 + 'px';
     } else {
-      pointerR.style.left =
+      const pointerStyle =
         values.end * step > 0
-          ? values.end * step - (pointerWidth / 2 - 1) + 'px'
+          ? values.end * step - pointerWidth / 2 + 1 + 'px'
           : -16 + 'px';
+      pointerR.style.left = pointerStyle;
+      pointerTemp.style.left = pointerStyle;
       selected.style.width = (values.end - values.start) * step + 'px';
       selected.style.left = values.start * step + 'px';
     }
@@ -242,7 +261,7 @@ export function init(config) {
     }
   }
 
-  function drag(e) {
+  function onDrag(e) {
     e.preventDefault();
     let dir = e.target.getAttribute('data-dir');
     if (dir === 'left') {
@@ -253,10 +272,16 @@ export function init(config) {
       activePointer = pointerR;
       firstRightEmit = true;
     }
+    if (dir === 'temp') {
+      activePointer = pointerTemp;
+      firstLeftEmit = true;
+      firstRightEmit = true;
+    }
   }
 
-  function drop() {
+  function onDrop() {
     activePointer = null;
+    pointerTemp.style.display = 'none';
     // Check condition if both pointer place together at min/max
     if (values.end === 0) {
       pointerL.style.zIndex = '0';
@@ -266,9 +291,14 @@ export function init(config) {
       pointerL.style.zIndex = '1';
       pointerR.style.zIndex = '0';
     }
+    if (values.start === values.end) {
+      pointerPlaceTogether = true;
+      pointerTemp.style.left = values.end * step - pointerWidth / 2 + 'px';
+      pointerTemp.style.display = 'block';
+    }
   }
 
-  function move(e) {
+  function onMove(e) {
     if (activePointer && !conf.disabled) {
       let coordX = e.type === 'touchmove' ? e.touches[0].clientX : e.pageX,
         index = coordX - sliderLeft - pointerWidth / 2;
@@ -277,44 +307,60 @@ export function init(config) {
       if (index <= 0) index = 0;
       if (index > conf.values.length - 1) index = conf.values.length - 1;
 
-      // Won't set values and emit if index greater smaller than start or greater than end again
-      if (index === 0 || index === conf.values.length - 1) {
-        if (!canMove && emitChange) {
-          emitChange = false;
+      if (pointerPlaceTogether) {
+        counter++;
+        if (counter === 22) {
+          counter = 0;
+          if (index > currentIndex) {
+            activePointer = pointerR;
+          } else {
+            activePointer = pointerL;
+          }
+          pointerPlaceTogether = false;
         }
-        canMove = false;
+        pointerTemp.style.left = index * step - pointerWidth + 'px';
       } else {
-        emitChange = true;
-        canMove = true;
-      }
-
-      const { start, end } = values;
-      let newStart = start,
-        newEnd = end;
-
-      if (emitChange) {
-        if (activePointer === pointerL) {
-          newStart = index;
-          if (secondeRender) {
-            newEnd = conf.values.length - 1;
-            secondeRender = false;
+        // Keep current index to decide to choose active pointer incase both place together in between min and max
+        currentIndex = index;
+        // Won't set values and emit if index smaller than start or greater than end again
+        if (index === 0 || index === conf.values.length - 1) {
+          if (!canMove && emitChange) {
+            emitChange = false;
           }
+          canMove = false;
         } else {
-          if (secondeRender) {
-            secondeRender = false;
-          }
-          newEnd = index;
-        }
-        // Won't set values and emit if the same values
-        if (!firstRender && newStart === start && newEnd === end) {
-          return;
-        } else {
-          values.start = newStart;
-          values.end = newEnd;
+          emitChange = true;
+          canMove = true;
         }
 
-        setValuesBasedOnPointer();
-        onChange();
+        const { start, end } = values;
+        let newStart = start,
+          newEnd = end;
+
+        if (emitChange) {
+          if (activePointer === pointerL) {
+            newStart = index;
+            if (secondeRender) {
+              newEnd = conf.values.length - 1;
+              secondeRender = false;
+            }
+          } else {
+            if (secondeRender) {
+              secondeRender = false;
+            }
+            newEnd = index;
+          }
+          // Won't set values and emit if the same values
+          if (!firstRender && newStart === start && newEnd === end) {
+            return;
+          } else {
+            values.start = newStart;
+            values.end = newEnd;
+          }
+
+          setValuesBasedOnPointer();
+          onChange();
+        }
       }
     }
   }
