@@ -257,6 +257,15 @@ export function init(config) {
 
   function drop() {
     activePointer = null;
+    // Check condition if both pointer place together at min/max
+    if (values.end === 0) {
+      pointerL.style.zIndex = '0';
+      pointerR.style.zIndex = '1';
+    }
+    if (values.start === conf.values.length - 1) {
+      pointerL.style.zIndex = '1';
+      pointerR.style.zIndex = '0';
+    }
   }
 
   function move(e) {
